@@ -263,9 +263,31 @@ module Technoweenie # :nodoc:
         self.class.image?(content_type)
       end
 
+      # Checks whether or not an attachment can be converted into an image for thumbnail processing
+      def imageable?
+        false
+      end
+
+      def temp_path_for_thumbnail
+        if image?
+          temp_path || create_temp_file
+        else
+          temp_path_for_non_image || create_temp_file_for_non_image
+        end
+      end
+
+      def create_temp_path_for_non_image
+        raise "Cannot create temp file for non-image"
+        #@temp_path_for_non_image = "Set this here"
+      end
+
+      def temp_path_for_non_image
+        @temp_path_for_non_image
+      end
+
       # Returns true/false if an attachment is thumbnailable.  A thumbnailable attachment has an image content type and the parent_id attribute.
       def thumbnailable?
-        image? && respond_to?(:parent_id) && parent_id.nil?
+        (image? || imageable?) && respond_to?(:parent_id) && parent_id.nil?
       end
 
       # Returns the class used to create new thumbnails for this attachment.
@@ -470,7 +492,7 @@ module Technoweenie # :nodoc:
         def after_process_attachment
           if @saved_attachment
             if respond_to?(:process_attachment_with_processing) && thumbnailable? && !attachment_options[:thumbnails].blank? && parent_id.nil?
-              temp_file = temp_path || create_temp_file
+              temp_file = temp_path_for_thumbnail
               attachment_options[:thumbnails].each { |suffix, size| create_or_update_thumbnail(temp_file, suffix, *size) }
             end
             save_to_storage
