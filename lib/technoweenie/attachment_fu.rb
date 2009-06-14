@@ -285,6 +285,24 @@ module Technoweenie # :nodoc:
         "#{basename}_#{thumbnail}#{ext}"
       end
 
+      # Get a not-previously-defined thumbnail (options, :width (Fixnum), :height (Fixnum), :exact (Boolean)
+      def autothumb(opts = {})
+        	thumb_key = "mxw#{opts[:width] || "a"}_mxh#{opts[:height] || "a"}_e#{opts[:exact] ? 1 : 0}" 
+
+		thumb = thumbnail_class.find_by_thumbnail_and_parent_id(thumb_key, id)
+		if thumb.nil?
+			temp_file = temp_path || create_temp_file
+			geometry = "#{opts[:width]}x#{opts[:height]}#{opts[:exact] ? '!' : ''}"
+
+			#NOTE - this only works if the width is specified, though it usually is
+			thumb = create_or_update_thumbnail(temp_file, thumb_key, geometry)
+
+			thumb.save!
+		end
+
+		return thumb
+      end
+
       # Creates or updates the thumbnail for the current attachment.
       def create_or_update_thumbnail(temp_file, file_name_suffix, *size)
         thumbnailable? || raise(ThumbnailError.new("Can't create a thumbnail if the content type is not an image or there is no parent_id column"))
