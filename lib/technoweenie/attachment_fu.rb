@@ -313,7 +313,9 @@ module Technoweenie # :nodoc:
 
 		thumb = thumbnail_class.find_by_thumbnail_and_parent_id(thumb_key, id)
 		if thumb.nil?
-			temp_file = temp_path || create_temp_file
+			#temp_file = temp_path || create_temp_file
+			temp_file = create_temp_file #NOTE - temp_path apparently doesn't work, at least for newly-created objects
+
 			geometry = "#{opts[:width]}x#{opts[:height]}#{opts[:exact] ? '!' : ''}"
 
 			#NOTE - this only works if the width is specified, though it usually is
